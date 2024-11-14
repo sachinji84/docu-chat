@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Chat</title>
+    <style>
+        /* Basic chat styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #chat-window {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding-right: 10px;
+        }
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #user-input {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+        }
+        button {
+            background-color: #25d366; /* WhatsApp green */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            padding: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .chat-bubble {
+            max-width: 70%;
+            padding: 10px;
+            border-radius: 20px;
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #dcf8c6; /* WhatsApp user message color */
+            align-self: flex-end;
+            text-align: right;
+        }
+        .bot-message {
+            background-color: #f1f1f1; /* Bot message color */
+            align-self: flex-start;
+        }
+        .timestamp {
+            font-size: 10px;
+            color: #999;
+            text-align: right;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div id="chat-window"></div>
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Type your message..." oninput="toggleButton()" />
+            <button id="send-btn" onclick="sendMessage()" disabled>→</button>
+        </div>
+    </div>
+    <script>
+        // Enable/Disable send button based on input field
+        function toggleButton() {
+            const inputField = document.getElementById("user-input");
+            const sendButton = document.getElementById("send-btn");
+            sendButton.disabled = inputField.value.trim() === "";
+        }
+
+        // Function to format time
+        function getFormattedTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        // Function to send message
+        async function sendMessage() {
+            const inputField = document.getElementById("user-input");
+            const chatWindow = document.getElementById("chat-window");
+            const userMessage = inputField.value.trim();
+            if (userMessage === "") return;
+
+            // Add user message to chat window
+            const userBubble = document.createElement("div");
+            userBubble.className = "chat-bubble user-message";
+            userBubble.textContent = userMessage;
+            const timestamp = document.createElement("div");
+            timestamp.className = "timestamp";
+            timestamp.textContent = getFormattedTime();
+            userBubble.appendChild(timestamp);
+            chatWindow.appendChild(userBubble);
+            inputField.value = "";
+            toggleButton();
+
+            // Scroll to the bottom
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            // Send request to backend
+            const response = await fetch(`/interact/{{ doc_id }}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ query: userMessage }),
+            });
+
+            const result = await response.json();
+
+            // Add bot response to chat window
+            const botBubble = document.createElement("div");
+            botBubble.className = "chat-bubble bot-message";
+            botBubble.textContent = result.response;
+            const botTimestamp = document.createElement("div");
+            botTimestamp.className = "timestamp";
+            botTimestamp.textContent = getFormattedTime();
+            botBubble.appendChild(botTimestamp);
+            chatWindow.appendChild(botBubble);
+
+            // Scroll to the bottom
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+# chat.prompty
+
+You are a helpful assistant.
+Conversation history:
+{{history}}
+Always answer based on the context provided. If information is not available, say so.
+Relevant document content:
+{{relevant_content}}
+User query: {{user_query}}
