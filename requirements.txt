@@ -15,4 +15,4 @@ uvicorn
 prompty 
 azure-identity 
 azure-cosmos
-azure-ai-openai
+# azure-ai-openai
